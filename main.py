@@ -1,13 +1,38 @@
-#Programa principal
+#!/usr/bin/env python3
 
-import speech_recognition as sr
+from vosk import Model, KaldiRecognizer
+import os
+import pyaudio
+import pyttsx3
+import json
 
-# Criar um reconhecedor
-r=sr.Recognizar()
+# Síntese de fala
+engine = pyttsx3.init()
 
-#Abrir o microfone para captura
-with sr.Microphone() as source:
-    while True:
-        audio = r.listen(source) # Define mic como fonte de áudio
-        print(r.recognize_google(audio, language='pt')) # reconhecendo com o google em portugês
-       
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[-2].id)
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+model = Model('model')
+rec = KaldiRecognizer(model, 16000)
+
+p = pyaudio.PyAudio()
+stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=8000)
+stream.start_stream()
+
+while True:
+    data = stream.read(2000)
+    if len(data) == 0:
+        break
+    if rec.AcceptWaveform(data):
+        result = rec.Result()
+        result = json.loads(result)
+
+        if result is not None:
+            text = result['text']
+
+            print(text)
+            speak(text)
