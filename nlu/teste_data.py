@@ -3,5 +3,4 @@ import yaml
 data=yaml.safe_load(open('nlu\\train.yml','r',encoding='uft-8').read())
 
 for command in data['commands']:
-
-print(command)
+    print(command)
